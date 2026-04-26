@@ -2,7 +2,11 @@
     <div class="products-page">
         <header class="header">
             <h1>Каталог товаров</h1>
-            <Link href="/admin/login" class="admin-link">Админ</Link>
+            <nav class="nav">
+                <Link v-if="isAuth" href="/admin/products" class="admin-link">Управление товарами</Link>
+                <button v-if="isAuth" @click="logout" class="logout-btn">Выйти</button>
+                <Link v-else href="/admin/login" class="admin-link">Админ</Link>
+            </nav>
         </header>
 
         <div class="filters">
@@ -46,8 +50,8 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
-import { Link, router } from '@inertiajs/vue3'
+import { ref, computed } from 'vue'
+import { Link, router, usePage } from '@inertiajs/vue3'
 
 const props = defineProps({
     products: Array,
@@ -57,6 +61,8 @@ const props = defineProps({
 })
 
 const selectedCategory = ref(props.filters?.category_id || null)
+const token = localStorage.getItem('auth_token')
+const isAuth = computed(() => !!token)
 
 const filterProducts = () => {
     router.get('/', { category_id: selectedCategory.value }, { preserveState: true })
@@ -64,6 +70,22 @@ const filterProducts = () => {
 
 const changePage = (page) => {
     router.get('/', { page, category_id: selectedCategory.value }, { preserveState: true })
+}
+
+const logout = async () => {
+    if (token) {
+        try {
+            await fetch('/api/logout', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+            })
+        } catch (e) {}
+    }
+    localStorage.removeItem('auth_token')
+    router.visit('/')
 }
 </script>
 
@@ -95,6 +117,21 @@ const changePage = (page) => {
     text-decoration: none;
     border-radius: 8px;
     font-weight: 500;
+}
+
+.logout-btn {
+    padding: 10px 20px;
+    background: #ef4444;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.nav {
+    display: flex;
+    gap: 12px;
 }
 
 .filters {

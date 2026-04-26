@@ -3,7 +3,7 @@
         <div class="login-card">
             <h1>Вход в админ-панель</h1>
             
-            <form @submit.prevent="login">
+            <form @submit.prevent="submit">
                 <div class="form-group">
                     <label for="email">Email</label>
                     <input 
@@ -30,8 +30,8 @@
                     <span v-if="errors.password" class="error">{{ errors.password }}</span>
                 </div>
 
-                <button type="submit" class="login-btn" :disabled="loading">
-                    {{ loading ? 'Вход...' : 'Войти' }}
+                <button type="submit" class="login-btn" :disabled="processing">
+                    {{ processing ? 'Вход...' : 'Войти' }}
                 </button>
             </form>
 
@@ -41,49 +41,44 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
-import { Link, router } from '@inertiajs/vue3'
+import { reactive, ref } from 'vue'
+import { Link, useForm, router } from '@inertiajs/vue3'
 
-const form = reactive({
+const processing = ref(false)
+const errors = ref({})
+
+const form = useForm({
     email: '',
     password: '',
 })
 
-const errors = ref({})
-const loading = ref(false)
-
-const login = async () => {
+const submit = () => {
+    processing.value = true
     errors.value = {}
-    loading.value = true
     
-    try {
-        const response = await fetch('/api/login', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-            },
-            body: JSON.stringify(form),
-        })
-        
-        if (!response.ok) {
-            const data = await response.json()
-            if (data.message) {
-                errors.value = { email: data.message }
-            }
-            return
+    fetch('/api/login', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+        },
+        body: JSON.stringify(form),
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.data && data.data.token) {
+            localStorage.setItem('auth_token', data.data.token)
+            router.visit('/admin/products')
+        } else {
+            errors.value = { email: data.message || 'Ошибка входа' }
         }
-        
-        const data = await response.json()
-        localStorage.setItem('auth_token', data.data.token)
-        
-        window.location.href = '/admin/products'
-    } catch (error) {
-        console.error('Login error:', error)
+    })
+    .catch(err => {
         errors.value = { email: 'Ошибка соединения' }
-    } finally {
-        loading.value = false
-    }
+    })
+    .finally(() => {
+        processing.value = false
+    })
 }
 </script>
 
