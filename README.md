@@ -5,6 +5,7 @@ cd bth
 cp .env.example .env
 npm install
 composer install
+npm run build
 php artisan key:generate
 docker-compose up -d
 docker-compose exec app php artisan migrate --seed
