@@ -2,14 +2,14 @@
     <div class="login-page">
         <div class="login-card">
             <h1>Вход в админ-панель</h1>
-            
+
             <form @submit.prevent="submit">
                 <div class="form-group">
                     <label for="email">Email</label>
-                    <input 
-                        id="email" 
-                        v-model="form.email" 
-                        type="email" 
+                    <input
+                        id="email"
+                        v-model="form.email"
+                        type="email"
                         required
                         class="form-input"
                         placeholder="admin@example.com"
@@ -19,10 +19,10 @@
 
                 <div class="form-group">
                     <label for="password">Пароль</label>
-                    <input 
-                        id="password" 
-                        v-model="form.password" 
-                        type="password" 
+                    <input
+                        id="password"
+                        v-model="form.password"
+                        type="password"
                         required
                         class="form-input"
                         placeholder="Введите пароль"
@@ -55,7 +55,7 @@ const form = useForm({
 const submit = () => {
     processing.value = true
     errors.value = {}
-    
+
     fetch('/api/login', {
         method: 'POST',
         headers: {
@@ -68,7 +68,9 @@ const submit = () => {
     .then(data => {
         if (data.data && data.data.token) {
             localStorage.setItem('auth_token', data.data.token)
+
             router.visit('/admin/products')
+
         } else {
             errors.value = { email: data.message || 'Ошибка входа' }
         }

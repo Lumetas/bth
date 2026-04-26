@@ -96,31 +96,32 @@ const confirmDelete = async () => {
                 'Content-Type': 'application/json',
             },
         })
-        
+
         if (response.ok) {
             router.reload()
         }
     } catch (error) {
         console.error('Error deleting product:', error)
     }
-    
+
     showDeleteModal.value = false
     productToDelete.value = null
 }
 
 const logout = async () => {
     try {
-        await fetch('/admin/logout', {
+        await fetch('/api/logout', {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json',
             },
+        }).then(res => res.json()).then(data => {
+            localStorage.removeItem('auth_token')
+            window.location.href = '/'
         })
     } catch (e) {}
-    
-    localStorage.removeItem('auth_token')
-    window.location.href = '/'
+
 }
 </script>
 
