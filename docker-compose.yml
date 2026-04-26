@@ -25,6 +25,7 @@ services:
       db:
         condition: service_healthy
     environment:
+      DB_CONNECTION: pgsql
       DB_HOST: db
       DB_PORT: 5432
       DB_DATABASE: bth
